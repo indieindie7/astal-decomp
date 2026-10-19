@@ -1,0 +1,214 @@
+0x060021d4 func sys_InitVideoAndSound hand =R11 =R11 provisional; long hardware init: clears VDP/system globals, vsync twice, sets callbacks and default work vars, tail-calls next stage
+0x0600237a func round_LoadIntroOverlay hand =R11 =R11 checks R11INTR_P16 present, loads R11INTR/R11MAIN_P16 data, sets VDP window params, registers two callbacks
+0x06002498 func round_StartMainLoop hand =R11 =R11 copies byte from player object +0x46, registers callbacks and tail-calls main loop entry
+0x060024e8 func round_FinishLoadWait hand =R11 =R11 if load-complete call returns 1 runs six post-load init steps and sets ready flag
+0x06002584 func cd_SetupCdBuffer hand =R11 =R11 sets up CDBUF area via two config calls with VDP/pad mask, optional hook, then tail-calls next stage
+0x060025da func sys_RegisterIrqHandlers hand =R11 =R11 installs three handler pointers saving returned old handles, tail-calls registration
+0x060028f4 func vdp1_InitSpriteSlotsMain hand =R11 =R11 sets slot counter 0 and registers six sprite slot rectangles via helper
+0x06002998 func vdp1_InitSpriteSlotsSmall hand =R11 =R11 sets slot counter 6 and registers four sprite slot rectangles via helper
+0x06002a10 func obj_AnimStepAndSubmitParts hand =R11 =R11 advances frame timer/anim index from anim table (+0x14), submits parts list to sprite slots, calls sprite_DrawPartsClipped
+0x06002b46 func obj_AnimSubmitPartsThenStep hand =R11 =R11 variant: reads current frame first, submits parts, draws via sprite_DrawPartsClipped, then advances frame counters
+0x06002c84 func sprite_DrawPartsClipped hand =R11 =R11 culls by world x, converts to screen coords, applies scale/rotate/flip flags and issues one VDP1 draw call per part
+0x06003118 func vdp2_InitScrollParams hand =R11 =R11 stores scroll/plane parameters into globals then two library calls with 0x40 and 0x20 sizes
+0x0600330c func debug_AnimViewerInit hand =R11 =R11 initialises test object: zeros globals, sets anim table pointer, hit box, position words, default sizes
+0x060034b8 func debug_AnimViewerInput hand =R11 =R11 pad bits change anim index 0..0x54 and move object x/y, scroll clamp by camera bounds
+0x06003680 func player_UpdateAnimState hand =R11 =R11 big switch (0..0x40) on current state: picks next anim/action table and resets frame counters per state
+0x06003e54 func demo_ReadScriptCommand hand =R11 =R11 reads command stream (type in low 3 bits), resets object flags, switch on voice cmd loads R43VOI* P16 voice files or round change RB1INTR/RB2MAIN
+0x0600baf8 func player_UpdateMovement hand =R11 =R11 calls vertical and horizontal move/collide, applies hooks, then camera scroll clamping against bounds
+0x0600bc24 func player_MoveAndCollideX hand =R11 =R11 adds x velocity (+0x2c) to x (+0x24), tests tile/wall flags, snaps to wall and zeroes velocity
+0x0600c0ae func player_MoveAndCollideY hand =R11 =R11 adds y velocity (+0x30) to y (+0x28), ground/ceiling tile checks, sets ground flags, big switch over tile types
+0x0600cc26 func player_UpdateTimersAndFlash hand =R11 =R11 toggles blink bit, decays a velocity via math_ApproachZero, counts down a timer and clears flag
+0x0600cdb4 func player_SetWalkSpeedFromPad hand =R11 =R11 pad direction bits set walk target (+0x73) to -20 or +20
+0x0600ce3c func player_SelectAirAnim hand =R11 =R11 provisional; picks anim 0x53 or 0x56 by facing when airborne, checks flags
+0x0600d834 func obj_ClampToWorldBounds hand =R11 =R11 calls x clamp then y clamp
+0x0600d854 func obj_ClampXToWorldBounds hand =R11 =R11 clamps x (+0x24) to left/right world limits unless edge-pass flags set, zeroes x velocity
+0x0600d8a4 func obj_ClampYToWorldBounds hand =R11 =R11 clamps y (+0x28) to top/bottom world limits unless flags set, zeroes y velocity
+0x0600dd60 func stub_0600de6c hand =R11 =R11 empty function returning
+0x0600dd64 func stub_0600de70 hand =R11 =R11 empty function returning
+0x0600dd70 func stub_0600de7c hand =R11 =R11 tail-calls function with param and one global value
+0x0600dd84 func obj_FindByFlagMask hand =R11 =R11 walks object list for entry whose flags (+0xe) match mask, skipping excluded objects, with predicate
+0x0600de74 func obj_FindHitboxOverlapReturnNode hand =R11 =R11 same as overlap search but returns list node
+0x0600def0 func obj_FindByFlagMaskTest hand =R11 =R11 walks object list filtered by flags with test callback, returns node
+0x0600df5e func obj_FindByFlagMaskTestArg hand =R11 =R11 like obj_FindByFlagMaskTest but passes argument to test callback
+0x0600dfd0 func leda_UpdateCompanionList hand =R11 =R11 provisional; loops over objects with id 0x3a updating state with callbacks
+0x0600e0d2 func effect_Task_0600e1de hand =R11 =R11 provisional; task state machine: init anim table and flags, then animates, uses position of parent (+8)
+0x0600e97c func input_UpdateButtonRepeat hand =R11 =R11 per-button repeat counters from pad masks, held and just-pressed
+0x0600f66c func player_HandleInputCommands hand =R11 =R11 provisional; big switch dispatching queued input/state commands on player object, reads command words
+0x0600fe4e func player_CheckPendingCommand hand =R11 =R11 if pending command word set, applies it to +0x68 or runs script reader
+0x0600fe74 func player_ReadScriptCommand hand =R11 =R11 reads next command words from stream pointer, sets flags (+0x22, +0xe, +0x78) per command type
+0x060100cc func stub_060101d8 hand =R11 =R11 only tail-jumps through a pointer
+0x06017264 func player_ReleaseHeldObject hand =R11 =R11 clears flags, sets anim 0x16, detaches held object link if it points to this one
+0x06017348 func player_ReleaseHeldObject_6017348 hand =R11 =R11 clears flags, sets anim 0x16, detaches held object link if it points to this one
+0x060186d0 func leda_MoveAndCollideY hand =R11 =R11 provisional; y velocity add, tile ground/ceiling tests with switch, same shape as player version
+0x06018e4c func debug_AnimViewerInput_2 hand =R11 =R11 pad changes anim index 0..0x34 and resets frame, second viewer variant
+0x06018f6a func obj_UpdateBlinkAndHeldTimer hand =R11 =R11 toggles blink bit, counts down timer, clears held pointer if owner differs
+0x06019128 func obj_SelectStateAnim hand =R11 =R11 provisional; chooses anim id from state, checks flags 0x78/0x23, calls hook
+0x060193b4 func obj_FollowHeldObject hand =R11 =R11 copies position to held object (id 0x3a) with y offset, releases if it changed id
+0x06019450 func obj_ClampXToWorldBounds_2 hand =R11 =R11 clamp x to world limits, sets edge flag (bit 8) when hitting blocked side
+0x060194c0 func obj_ClampYToWorldBounds_2 hand =R11 =R11 clamp y to world limits, sets edge flag when blocked, bounces y velocity
+0x06019538 func obj_ClearOffscreenFlag hand =R11 =R11 clears bit 8 flag when object is inside camera window
+0x06019584 func obj_Task_StateMachine_06019690 hand =R11 =R11 provisional; task with switch on +0x11, init anim table and flags, per-state updates
+0x06019960 func obj_FindByFlagMaskOther hand =R11 =R11 searches object list by flags with callback against stored current object
+0x060199d4 func obj_FindHitboxOverlapReturnBody_2 hand =R11 =R11 overlap search returning body pointer, variant 2
+0x0601a036 func effect_Task_0601a142 hand =R11 =R11 provisional; task: init anim, set frame sprite from table, follow parent
+0x0601a1d0 func effect_Task_0601a2dc hand =R11 =R11 provisional; two-state task: init anim then run, copies parent
+0x0601a88c func effect_Task_0601a998 hand =R11 =R11 provisional; task similar to a632 but shorter
+0x0601af66 func input_UpdateButtonRepeat_2 hand =R11 =R11 duplicate per-button repeat counter updater
+0x0601b110 func map_GetTileAttr hand =R11 =R11 returns tile attribute byte at (x>>4,y>>4) from map table
+0x0601b14c func map_FindGroundYBelow hand =R11 =R11 scans down tile column until nonzero tile, returns tile y in 16.16
+0x06020bda func enemy_AiState_0602172e hand =R11 =R11 provisional; AI state byte +0x7e: init anim 0xf, zero velocities, then per-state behaviour
+0x06020d88 func enemy_AiState_060218dc hand =R11 =R11 provisional; short AI state: picks anim 3 and flags from global mode bit
+0x06020e24 func enemy_AiState_06021978 hand =R11 =R11 provisional; AI state machine with anim 4, zero velocity, sub-calls
+0x06021042 func enemy_AiState_06021b96 hand =R11 =R11 provisional; larger AI state machine anim 3 with timers and three sub-calls
+0x060213fe func enemy_AiState_06021f52 hand =R11 =R11 provisional; AI machine initialising timers and flags, three sub-calls
+0x060215b6 func enemy_AiState_0602210a hand =R11 =R11 provisional; short AI machine with timer fields init
+0x060216a4 func obj_FindOverlappingHazard hand =R11 =R11 loops object list for flagged entries overlapping param via callback, marks them hit (+0x23 bit 4)
+0x060217ae func enemy_AiState_06022302 hand =R11 =R11 provisional; AI state machine with anim from player-relative position
+0x06021b68 func enemy_AiState_060226bc hand =R11 =R11 provisional; switch on +0x7e (0..10) AI state machine
+0x06021eec func enemy_PickRandomDelay hand =R11 =R11 random 0..3 selects a wait timer value stored at +0x6a
+0x0602209c func enemy_AiState_06022bf0 hand =R11 =R11 provisional; AI state machine anim 3 with timers
+0x060224a6 func enemy_AiState_06022ffa hand =R11 =R11 provisional; AI state machine anim 0xe, reads player position
+0x06022664 func boss_AiState_060231b8 hand =R11 =R11 provisional; large AI machine anim 4, many sub-calls, reads player object
+0x06022d4c func enemy_AiState_060238a0 hand =R11 =R11 provisional; AI machine anim 5 with sub-calls
+0x060230bc func boss_AiState_06023c10 hand =R11 =R11 provisional; large AI machine, checks init callback result, nine sub-calls
+0x06023704 func enemy_AiState_06024258 hand =R11 =R11 provisional; AI machine anim 0x10 with timers
+0x06023992 func enemy_AiState_060244e6 hand =R11 =R11 provisional; AI machine anim 0x11 with callbacks
+0x06023d68 func enemy_AiState_060248bc hand =R11 =R11 provisional; AI machine with velocity init, callbacks
+0x060240a4 func enemy_AiState_06024bf8 hand =R11 =R11 provisional; AI machine with init-callback check
+0x0602436c func enemy_AiState_06024ec0 hand =R11 =R11 provisional; short AI machine
+0x060244e8 func enemy_AiState_0602503c hand =R11 =R11 provisional; short AI machine, void return
+0x060246a8 func enemy_AiState_060251fc hand =R11 =R11 provisional; AI machine with velocity zeroing and two sub-calls
+0x060249a8 func enemy_AiState_060254fc hand =R11 =R11 provisional; AI machine anim 0xb with 4 sub-calls
+0x06024dac func enemy_AiState_06025900 hand =R11 =R11 provisional; AI machine with anim-flag toggle
+0x06025552 func obj_CountByType hand =R11 =R11 counts live objects in list with given type id
+0x06025b12 func anim_StepTableFrame hand =R11 =R11 steps packed frame index (hi=frame lo=tick) through anim table, wraps at counts
+0x060266bc func boss_AiState_06027210 hand =R11 =R11 provisional; large AI machine anim 4 with sub-calls
+0x06026c88 func enemy_ProcessHitCollision hand =R11 =R11 provisional; big hit handler by collision flags (+0x72), damage and state change
+0x060272f2 func enemy_AiState_06027e46 hand =R11 =R11 provisional; AI machine with velocity init
+0x060275e4 func enemy_AiState_06028138 hand =R11 =R11 provisional; AI machine anim 0xf
+0x06027784 func enemy_AiState_060282d8 hand =R11 =R11 provisional; AI machine anim 0x16
+0x06027ada func enemy_AiState_0602862e hand =R11 =R11 provisional; AI machine with anim-flag toggle, variant
+0x0602b428 func enemy_AiState_060290a0 hand =R11 =R11 provisional; AI machine anim 4 with 3 sub-calls
+0x0602bda0 func enemy_AiState_06029a18 hand =R11 =R11 provisional; AI machine, calls library with anim tables until done flag
+0x0602beda func obj_FindOverlapByTypes hand =R11 =R11 searches object list for two type ids overlapping this object's hitbox
+0x0602c160 func round_ObjectClearTask hand =R11 =R11 provisional; task with switch +0x11, case 0 clears a table of pointers, then other states
+0x0602c5b6 func input_UpdatePadEdges hand =R11 =R11 compares pad state with last frame, stores previous, computes held/pressed edge bytes
+0x0602c8e2 func effect_SpawnByFlagBits hand =R11 =R11 tests bits 0..3 in flags (+0x30) and spawns effect for each
+0x0602c9c0 func effect_SpawnWithParams hand =R11 =R11 creates object via callback, sets type, timer 0x1e and two position args
+0x0602ca04 func effect_Task_0602a67c hand =R11 =R11 provisional; task switching on parent state (+0x11): init anim and flags per parent state
+0x0602cc70 func hud_DrawTensDigit hand =R11 =R11 computes tens digit (0..9) of byte at +0x1a of parent and sets sprite pos
+0x0602d51a func effect_Task_0602b192 hand =R11 =R11 provisional; task switching on grandparent state, init anim
+0x0602d698 func effect_Task_0602b310 hand =R11 =R11 provisional; large task switching on grandparent state, animation and positions
+0x0602e3d8 func effect_Task_0602c050 hand =R11 =R11 provisional; large task: updates pos fields of linked object by state
+0x0602e7f8 func effect_Task_0602c470 hand =R11 =R11 provisional; task on grandparent state with flags 0x22 and sub-calls
+0x0602e9d2 func effect_Task_0602c64a hand =R11 =R11 provisional; per-frame task with counter byte +0x7c and switch
+0x0602ec1a func effect_Task_0602c892 hand =R11 =R11 provisional; task on grandparent state with sub-calls
+0x0602eeea func effect_Task_0602cb62 hand =R11 =R11 provisional; large task on grandparent state minus 1, switch
+0x0602f442 func effect_SetOffsetFromParent hand =R11 =R11 copies parent position and sets offsets by angle range 0x20/0x40 of param
+0x0602f638 func sprite_DrawSingleOffset hand =R11 =R11 converts position to screen coords and issues one sprite draw with y offset
+0x0602f6a8 func sprite_DrawAnimPartsSimple hand =R11 =R11 draws all parts of current anim frame at object position (no rotation)
+0x0602f784 func sprite_DrawAnimPartsScaled hand =R11 =R11 draws anim frame parts with scale about centre
+0x0602f934 func sprite_DrawAnimFrameScaled hand =R11 advances animation frame timer, then per part scales offsets by 8.8 factors and queues sprite via vdp1 callback
+0x0602fb50 func sprite_DrawAnimPartsRotated hand =R11 =R11 draws anim frame parts rotated using sine table
+0x0602fdb0 func sprite_DrawAnimFrameRotated hand =R11 same animation stepping, rotates each part quad by sin/cos table angle, queues distorted sprite via callback
+0x0603109a func item_Task_FromTable hand =R11 =R11 provisional; task init from table entry (0x18 bytes by index), copies pos, speed, then update
+0x06031386 func item_Task_RandomDrop hand =R11 =R11 provisional; picks random kind 0..11, updates movement relative to parent
+0x06031788 func item_Task_0602f400 hand =R11 =R11 provisional; task state +0x11 init flags 0x22, anim, then updates
+0x060319f4 func item_Task_FromTable2 hand =R11 =R11 provisional; task init from table entry (0x2c bytes by index), then update
+0x06031ce6 func item_Task_RandomDrop2 hand =R11 =R11 provisional; larger random-kind pickup task with parent link
+0x060320c0 func item_SpawnGroupFromTable hand =R11 =R11 spawns several objects per table row (6 bytes per row), sets each type
+0x06032174 func item_Task_0602fdec hand =R11 =R11 provisional; task with table-driven init and state machine
+0x060326b0 func obj_SpawnPatternGroup hand =R11 =R11 spawns up to param_2 objects from table (0x24-byte rows) selected by +0xc id
+0x0603284c func effect_Task_060304c4 hand =R11 =R11 provisional; large task, random variant 0..3, long update
+0x06033194 func stub_0603173c hand =R11 tail-jumps to function with constant argument 0xf
+0x060331b4 func camera_UpdateBounceScroll hand =R11 =R11 counts down timer, flips sign of scroll offset, damps it below threshold
+0x0603378a func stub_0603156e hand =R11 =R11 tail-calls function with global plus two args
+0x060338a8 func stub_0603156e_60338a8 hand =R11 =R11 tail-calls function with global plus two args
+0x0603392c func collide_TestObjectVsMapTiles hand =R11 =R11 provisional; clears six result bytes then tests object hitbox against map tile table
+0x06033d3e func collide_TestBoxVsMapEdges hand =R11 =R11 provisional; converts positions to screen-relative boxes and scans edge tiles for overlap
+0x06034016 func collide_ResolveTileTypeAction hand =R11 =R11 provisional; big switch on tile type byte, reads object x and returns collision bits
+0x060345c0 func obj_CheckHitFlagsEnabled hand =R11 =R11 if flag bit 2 set and +0x7c nonzero clears +0x72 and runs hit check
+0x0603465c func obj_ApplyHitCodeToFlags hand =R11 =R11 maps hit code at +0x23 to bits ORed into collision word at +0x72
+0x060346f8 func obj_TestHitAgainstPlayers hand =R11 =R11 tests object against two player objects, sets +0x72 direction bits by player flags
+0x060348ac func obj_TestHitAgainstTwoTargets hand =R11 =R11 tests box against two player hitboxes and sets hit bit +0x23 on the one touched
+0x06034a2a func obj_AddHitFlagIfGlobalSet hand =R11 =R11 if global flag nonzero adds constant to +0x72 and returns 1
+0x06034a48 func obj_NormalizeHitDirection hand =R11 =R11 masks hit word and resolves direction bits 4 and 8 into single side code
+0x06034b9c func obj_IsXNegative hand =R11 =R11 returns whether short at +0x24 is negative
+0x06034bb8 func math_AbsDeltaWord hand =R11 =R11 absolute difference of the short at +0x10 of two objects
+0x06034be8 func obj_IsWithinXRange hand =R11 =R11 returns 1 if absolute x distance between two objects is within param
+0x06034c18 func input_MapPadToDirectionBits hand =R11 =R11 maps pad state bits to direction code 0x10 or 0x40 by facing flag and combines with second input
+0x06034d06 func collide_TestBoxAgainstHitTable hand =R11 =R11 provisional; looks up 0x12-byte hit entries by index in +0x6a, tests rects, returns flags
+0x06034f76 func collide_TestScreenBoxVsMap hand =R11 =R11 provisional; screen-relative box tested against map rect list at +0x48
+0x060350d6 func collide_BuildScreenBox hand =R11 =R11 builds four corner screen coords from object position, camera and box words
+0x060351a8 func player_CheckScrollEdgeBlocked hand =R11 =R11 if mode 4 and sub-mode 2, tests object y coordinates against bounds and clears pointer
+0x060352c8 func player_CheckFlag40AndSetBit8 hand =R11 =R11 if player flag +0x21 bit 6 set sets +0x23 bit 3, returns inverse
+0x060352ec func slot_ClearTableAndResetState hand =R11 clears 8-byte slot entries, zeroes five globals, sets or bumps a counter capped at 4 depending on mode flag
+0x060357a8 func stub_06037918 hand =R11 =R11 empty function returning
+0x060357ac func scene_UpdateSlotTimeline hand =R11 =R11 provisional; per-slot 0x20 byte record, steps through event table and computes target position
+0x06035bc4 func scene_UpdateMainStateMachine hand =R11 =R11 provisional; big switch over mode byte 0..4 with many sub-modes, drives scene logic
+0x06036c04 func scene_StateTask_06038d74 hand =R11 =R11 provisional; calls init, then switches on global state byte, sets fade or timer values
+0x06036e58 func scene_StateTask_06038fc8 hand =R11 =R11 provisional; two sync calls then switch on state byte with timers and sound calls
+0x06037228 func scene_StateTask_06039398 hand =R11 =R11 provisional; two sync calls, state 0 init flags, then tail-jumps to next stage
+0x06037314 func scene_StateTask_06039484 hand =R11 =R11 provisional; state byte init sets mode 3, runs timer and wait steps
+0x06037536 func scene_StateTask_060396a6 hand =R11 =R11 provisional; state byte 0 calls load with shifted arg then waits for finish
+0x06037800 func scene_StateTask_06039970 hand =R11 =R11 provisional; like 060396a6 variant with different load args and timers
+0x06037b70 func scene_StateTask_06039ce0 hand =R11 =R11 provisional; checks object pointer valid else calls init, then switch on state
+0x06037e44 func scene_StateTask_06039fb4 hand =R11 =R11 provisional; large switch (11 cases) on state byte, loads and fades
+0x060383c8 func scene_StateTask_0603a538 hand =R11 =R11 provisional; sync call, state 0 init flags then tail-calls next
+0x0603847c func scene_StateTask_0603a5ec hand =R11 =R11 provisional; short state machine, init flags then timers and next-stage call
+0x0603858c func scene_StateTask_0603a6fc hand =R11 =R11 provisional; state 0 init with value 0x2a then calls next stage
+0x06038620 func scene_StateTask_0603a790 hand =R11 =R11 provisional; larger state machine with eight sub-calls
+0x06038900 func scene_StateTask_0603aa70 hand =R11 =R11 provisional; state 0 sets mode 4, state 1 waits on counters
+0x06038a24 func scene_StateTask_0603ab94 hand =R11 =R11 provisional; sync call, state 0 init then calls next stage
+0x06038b00 func scene_StateTask_0603ac70 hand =R11 =R11 provisional; state 0 sets mode 6, loads resources, calls next stage
+0x06038cc8 func scene_StateTask_0603ae38 hand =R11 =R11 provisional; checks object valid else init, then switch with three sub-calls
+0x06038fcc func scene_StateTask_0603b13c hand =R11 =R11 provisional; state 0 sets mode 5, loads, waits, calls next stage
+0x060391a8 func scene_StateTask_0603b318 hand =R11 =R11 provisional; switch on state byte with load and fade calls
+0x0603942e func scene_StateTask_0603b59e hand =R11 =R11 provisional; state 0 sets mode 7, loads, waits, calls next stage
+0x06039614 func scene_StateTask_0603b784 hand =R11 =R11 provisional; switch on state with sound and timer calls
+0x0603986e func scene_StateTask_0603b9de hand =R11 =R11 provisional; checks object valid else init, then state switch with five sub-calls
+0x06039a5c func scene_StateTask_0603bbcc hand =R11 =R11 provisional; large state machine checking object pointer, many sub-calls
+0x06039f18 func scene_StateTask_0603c088 hand =R11 =R11 provisional; sync call, state 0 init then calls next stage
+0x06039fec func scene_StateTask_0603c15c hand =R11 =R11 provisional; large state machine with load and animation calls
+0x0603a490 func scene_StateTask_0603c600 hand =R11 =R11 provisional; state machine with init, timers and one sub-call
+0x0603a664 func menu_DrawRowsTable_A hand =R11 =R11 provisional; looks up row table from object x, loops rows and draws entries
+0x0603a7a4 func menu_DrawRowsTable_B hand =R11 =R11 provisional; calls hook then looks up row table from object x and draws rows
+0x0603a8be func menu_DrawRowsTable_C hand =R11 =R11 provisional; hook plus row table draw variant with a char arg
+0x0603a9d6 func stub_0603cb46 hand =R11 =R11 returns zero
+0x0603a9da func stub_0603cb4a hand =R11 =R11 returns zero
+0x0603a9de func stub_0603cb4e hand =R11 =R11 empty function returning
+0x0603b0f0 func player_IsInSpecialAnimRange hand =R11 =R11 returns 1 if anim id at +0x68 is between 0x65 and 0x6a
+0x0603b130 func scene_SetCurrentObjectDefaults hand =R11 =R11 stores current object pointer, copies its type, sets mode 0x23 and zeroes three globals
+0x0603b354 func obj_FindActiveByTypeId hand =R11 =R11 scans object list for type id with state byte 1, returns 1 if found
+0x0603b3d4 func obj_FindByTypeAndPosition hand =R11 =R11 scans object list for type id matching x position range, returns result
+0x0603b6b8 func obj_FindByTypeWithConditions hand =R11 =R11 scans object list for type id with nested conditions, returns 1 or 0
+0x0603b910 func menu_BuildRowTableAndCount hand =R11 =R11 provisional; clears three globals then builds menu rows from object table by x
+0x0603bb68 func menu_ProcessInput hand =R11 =R11 provisional; reads pad bits, handles select/confirm and moves cursor by state byte
+0x0603bd40 func obj_IsInsideWorldWindow hand =R11 =R11 returns 1 if object position lies inside the global window bounds
+0x0603bd98 func scene_HandleStartButton hand =R11 =R11 provisional; if start bit set plays sound, mode 6 becomes 0xb, calls cleanup
+0x0603be2c func scene_SelectNextModeByState hand =R11 =R11 provisional; sets mode 5/6 by state byte values 1/2 and updates globals
+0x0603beb0 func menu_StepCursorByPad hand =R11 =R11 provisional; maps pad bits 0x10/0x20/0x40 to cursor step with wrap
+0x0603bfa0 func scene_WaitStateMachine_0603e110 hand =R11 =R11 provisional; when mode byte 1, steps substate 0..n with counters and callbacks
+0x0603c39c func collide_TestSpriteAgainstRectList hand =R11 =R11 provisional; relative position tested against rect list (+0x44 or +0x48), returns 0/1
+0x0603c536 func collide_TestSpriteAgainstRectListEx hand =R11 =R11 provisional; extended rect-list test with eight args, per-rect offsets
+0x0603c7f4 func sys_ClearTwoGlobals hand =R11 =R11 zeroes two global words
+0x0603c800 func scene_ForceMode3IfPending hand =R11 =R11 if pending flags set and mode not 3 sets mode 3 and clears timers, sets flag bit
+0x0603c87c func scene_TickCounterState hand =R11 =R11 state 0 sets flag and zero, state 1 increments counter while both gates clear
+0x0603c908 func scene_ClearStateGlobals hand =R11 =R11 zeroes about ten state globals
+0x0603c9b0 func scene_UpdateCounterTask hand =R11 =R11 provisional; switch on state byte, sound call, counters and timers
+0x0603cd32 func scene_UpdateRankTask hand =R11 =R11 provisional; loops with several flags and char values, selects results
+0x0603cf98 func sys_ClearWorkAreaAndInit hand =R11 =R11 clears a work area word by word, then initialises a few globals
+0x0603d01c func scene_ResetPlayerState hand =R11 =R11 provisional; zeroes many state globals and sets default 0x1e timer
+0x0603d114 func scene_UpdateMainFrame hand =R11 =R11 provisional; builds packed word from two bytes, runs update call, validates object pointer, loops
+0x0603d398 func scene_DrawHudAndCounters hand =R11 =R11 provisional; if flag clear and count below 5 calls one routine else another, then draws numbers
+0x0603d4d4 func scene_PollAndDispatchInput hand =R11 =R11 provisional; sync call, compares input value to table and sets state 8 on match
+0x0603d5d0 func scene_InitSubState hand =R11 =R11 provisional; zeroes about eight globals, sets flag 1, runs table copy
+0x0603d6c4 func scene_StartPositionLookup hand =R11 =R11 provisional; sets state 2, reads player x/y, calls lookups and copies data
+0x0603d7c4 func scene_RunPathStep hand =R11 =R11 provisional; calls path function with five args, sets state 7 if not found
+0x0603da44 func scene_RunMoveSequenceA hand =R11 =R11 provisional; reads 12-byte table row by index-1, long move/sequence with five sub-calls
+0x0603e004 func scene_RunMoveSequenceB hand =R11 =R11 provisional; reads 12-byte table row by index-1, long move/sequence variant of fbb4
+0x0603e5b8 func scene_FindTableEntryByIndexA hand =R11 =R11 provisional; searches array backwards from index-0x4b for matching byte
+0x0603e688 func scene_FindTableEntryByIndexB hand =R11 =R11 provisional; searches array backwards for matching byte, returns char
+0x0603e818 func scene_ComputeAngleToTarget hand =R11 =R11 provisional; computes delta to target and angle via call, builds direction vector
+0x0603e946 func map_ClassifyTileType hand =R11 =R11 switch on tile id returns class byte for ids 0 2 9 10 11 12 13 14 0x1a
+0x0603e9a8 func scene_QueueScreenPosCall hand =R11 =R11 converts position minus camera plus offset and calls routine with constant 0x1a

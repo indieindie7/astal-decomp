@@ -1,0 +1,133 @@
+0x06002000 func movie_UpdateScene hand state machine: check BPT.CPK exists, play movie, else show "CINEPAK FILE IS NOT EXIST" text until button/timeout
+0x06002184 func movie_InitSystem hand masks interrupts, calls init chain and sets display/sound mode (SGL-like system init) before movie playback
+0x06002214 func movie_Start hand stores arg, checks BPT.CPK open result, sets mode 6 or 7, runs setup then PlayLoop and vector setup
+0x06002290 func movie_PollEvent hand provisional: fills 16-byte buffer via A0SYS call, if code 0x26 calls handler
+0x060022b4 func movie_FatalLoop hand stores arg then loops forever polling events
+0x060022ce func movie_PlayLoop hand per-frame state loop: init player, wait for end or button (0x3c frames), tear down, until state 4
+0x06002608 func movie_Finish hand clears two buffers via helper calls, resets flags, calls two cleanup functions
+0x06002668 func sys_SaveSetVectors hand interrupt masked; saves SH-2 vectors 0x40,0x41,0x4d and installs new handler for 0x40
+0x06002704 func sys_SetVector40 hand masks interrupts, sets SH-2 interrupt vector 0x40 to saved handler
+0x06002746 func sys_SetVectors41_4d hand masks interrupts, installs handlers for SH-2 vectors 0x41 and 0x4d
+0x060027b4 func sys_RestoreVectors41_4d hand restores saved handlers for vectors 0x41,0x4d then calls one more setup function
+0x06002810 func cpk_OpenSession hand provisional: calls A0SYS open function, stores handle, passes to follow-up call if nonzero
+0x06002860 func cpk_CloseSession hand provisional: calls A0SYS function with stored session handle
+0x06002872 func cpk_SetChannelMap hand provisional: builds array of six 0xffff shorts and passes with handle to A0SYS call
+0x060028f8 func cpk_CallWrapper hand thin wrapper forwarding one argument to A0SYS function
+0x0600290e func cpk_CreateAndStartMovie hand opens, builds config struct, creates player, reads header dims, sets buffer and starts playback
+0x06002a58 func movie_ServiceFrame hand if playing flag set and poll returns 1, bump frame counter and wait for vblank flag then continue
+0x06002b56 func vblank_Wait hand sets flag to 1 and spins until interrupt handler clears it
+0x06002b74 func vdp2_UpdateColorOffsetFade hand steps three short color-offset values (RGB) toward targets, writes them out when all reached
+0x06002d76 func vdp2_SetFadeTarget hand stores three short targets (R,G,B) for color offset fade
+0x06002da8 func vdp2_SetFadeTargetConstA hand calls SetFadeTarget with one constant for all three channels
+0x06002dcc func vdp2_SetFadeTargetConstB hand calls SetFadeTarget with another constant for all three channels
+0x06002e10 func vdp2_FadeStart hand sets fade-active flag and loads three step values from one constant
+0x06002e5c func vdp2_ResetColorOffset hand copies saved offset values, zeros three channels and writes them out, resets fade state
+0x06002eec func mem_CopyLongs hand copies param_3 32-bit words from source to destination
+0x060032ec func cpk_ClearErrorState hand zeroes error code, error callback and callback argument
+0x060032fc func cpk_ReportError hand stores error code and calls registered error callback with its argument
+0x06003324 func cpk_GetLastError hand returns stored error code
+0x06003338 func cpk_SetErrorCallback hand stores error callback pointer and its argument
+0x06003342 func stub_06003342 hand empty function
+0x06003378 func cpk_Init hand clears library globals, calls two init functions, clears error state and runs final init
+0x060033b6 func cpk_DestroyHandlesByMask hand walks bitmask table, calls cpk_DestroyHandle for each set bit, clears mask, calls cleanup function
+0x06003438 func cpk_FrameTick hand provisional: interrupts masked, increments counter, calls two per-frame functions
+0x0600347e func cpk_CreateHandle hand finds free slot of 32, initializes stream struct with buffer ptr, size and ring pointers; error codes if none
+0x06003622 func cpk_DestroyHandle hand frees handle slot bit, stops it, clears active flag when no slots left
+0x060036a4 func cpk_GetRingReadRegion hand computes readable bytes and contiguous chunk and start in stream ring buffer
+0x0600371c func cpk_AdvanceRingRead hand advances read and decode positions in ring, wraps by ring size
+0x0600375c func cpk_MirrorRingTail hand copies wrap-around overflow bytes back to ring start via copy function
+0x060037b0 func cpk_AdvanceRingWrite hand advances write position in ring buffer with wraparound
+0x060037e6 func cpk_AdvanceWriteOrPending hand advances ring write or adds to pending count depending on a flag
+0x0600380a func cpk_GetStream hand returns first field of handle (stream pointer)
+0x06003810 func cpk_GetStreamState hand returns stream pointer plus 0x34 (state area)
+0x06003818 func cpk_GetStreamField hand returns a field at fixed offset of stream
+0x06003820 func cpk_SetStateLoading hand sets stream state to 2
+0x0600382c func cpk_ServiceTransfer hand processes pending transfer queue entries, mirrors audio ring edge, dispatches next queued 12-byte request
+0x0600394a func cpk_DrainTransfers hand loops service call until pending transfer count is zero
+0x06003990 func cpk_Stop hand drains transfers, stops if state 4, sets state 5
+0x060039ba func cpk_Reset hand drains transfers, clears audio buffers (one or two channels), resets audio position, state 1
+0x06003c1a func cpk_InitFrameTables hand builds four pointer tables for frame buffers from computed offsets in a loop
+0x06003cf8 func cpk_ParseHeader hand reads Cinepak film header, validates sizes against buffer, computes chunk layout, sets state 3
+0x06003f02 func cpk_StartPlayback hand if enough data buffered computes start delay by video mode, calls prefetch functions, sets state 4
+0x0600400a func cpk_SetDecodeParam hand stores parameter in stream and rebuilds frame tables
+0x0600401c func cpk_SetVolumeAndQueueCommand hand stores value at handle+0x28, if state==4 sends snd_QueueCommandA with -1 args
+0x0600403c func cpk_SetSkipFlag hand stores flag in stream, if playing re-syncs with 0xffffffff args
+0x06004074 func cpk_CopyStreamState hand validates two handles match then clones playback position state from one to other, state 4
+0x060041a4 func cpk_GetCurrentHandle hand returns global current handle pointer
+0x060041c0 func cpk_CheckHeaderReady hand returns 0 if header and first chunk are fully buffered else 1,2 or 3
+0x06004228 func cpk_StopAndMarkLoading hand if handle nonzero calls cpk_Stop, then cpk_SetStateLoading on global handle and clears it
+0x06004242 func cpk_GetHandleBySlot hand returns handle table address for slot if slot bit set else 0
+0x06004278 func cpk_ResetSeekState hand updates max size and resets position fields of a cpk record
+0x060042ae func cpk_DecodeFrameByIndex hand parses header, locates frame in index table, mirrors ring tail, calls cpk_DecodeFrameChunks, reports errors via cpk_ReportError
+0x06004410 func cpk_DecodeKeyFrames hand parses header then decodes chunks up to index calling decoder per chunk with ring wrap handling
+0x060045ae func cpk_FeedAudioChunk hand copies one audio chunk from ring to audio buffers (mono/stereo), via DMA or direct, advances ring
+0x060049f4 func cpk_FillAudioSilence hand when audio buffered enough, zero-fills audio buffer regions for mono or stereo
+0x06004b22 func cpk_NextFrameAvailable hand returns 1 if next chunk exists in header table and is fully buffered
+0x06004b92 func cpk_DecodeNextFrame hand decodes one video frame chunk to frame buffer, updates frame counters, schedules audio
+0x06005000 func cpk_ClearPlayerGlobals hand zeroes three global words
+0x06005010 func cpk_CreatePlayer hand validates six config pointers, creates player object, sets state 2 and callbacks, registers handler
+0x06005152 func cpk_DestroyPlayer hand validates state, stops player, unregisters handler and frees object
+0x060051da func cpk_CallCreateInternal hand builds 12-word config struct from seven args and calls internal player creator
+0x06005294 func cpk_PollDecodeStatus hand gets stream position, when frame index changed runs per-frame callback then notifies
+0x06005340 func cpk_WaitTransferIdle hand if busy flag set, loops calling matching poll function until it stops returning 2
+0x060054c8 func cpk_StartDmaCopy hand sets up transfer descriptor (src, dst, count words) and starts it via library calls, saves dest and byte size
+0x06005554 func cpk_CheckDmaDone hand reads transfer status, returns 1 done, 2 busy, else 0 after finishing hook
+0x060056c0 func cpk_StartDmaCopy2 hand interrupts masked; stores src and size, fills descriptor with mode fields, starts transfer, sets busy flag
+0x06005748 func cpk_CheckDmaDone2 hand if busy flag set reads status, returns 2 while running else calls completion hook
+0x060059f0 func cpk_ClearFlagAndCall hand clears a global flag, calls function, returns 1
+0x06005a04 func cpk_TailCallStub hand tail-calls a function pointer
+0x06005ae2 func cpk_ApiCheckedCall hand null check and state field check with error codes, then tail-calls internal function
+0x06005b44 func cpk_ApiForEachStream hand calls a vtable method on given stream or on all 32 streams
+0x06005b92 func cpk_ApiWrapperVoid hand calls a function with no args
+0x06005b9a func cpk_ApiVtableCall hand null check then calls function pointer from stream vtable
+0x06005bd0 func cpk_ApiNullCheckCall hand null check, error otherwise tail-call internal function
+0x06005c6e func cpk_ApiSetParamA hand validates stream and value 0..7, stores at stream offset 0x18
+0x06005ca6 func cpk_ApiSetParamB hand validates stream and value 0..7, stores at stream offset 0x1c
+0x06005cec func cpk_ApiSetCallback hand null check then tail-calls function setting callback
+0x06005d48 func cpk_ApiReportBusyState hand finds another active stream, by state value tail-calls handler or reports one of two error codes
+0x06005dce func cpk_ApiGetErrorState hand wrapper calling library state query
+0x06005df0 func cpk_ApiSetBuffer hand validates stream and size>0, stores buffer pointer and size in stream
+0x06005e2e func cpk_ApiVtableCallChecked hand validates stream and size>0 then calls vtable method
+0x06005e6c func cpk_ApiGetFrameCount hand returns stream field 0x38 if state>=3 else 0
+0x06005eae func cpk_ApiGetState hand returns stream state, -1 if null
+0x06005ee0 func cpk_ApiGetInfo hand null check then returns result of internal getter
+0x06005f00 func cpk_ApiIsFlagged hand returns field +8 of stream, or 1 if any of 32 streams has it set
+0x06005f5c func cpk_ApiClearFlag hand clears field +8 for one or all 32 streams
+0x06005fa4 func cpk_ApiWrapperA hand calls a function with no args
+0x06005fac func cpk_ApiWrapperB hand calls another function with no args
+0x06005fc4 func cpk_ApiQuery hand null check, calls internal query writing a result word, returns it
+0x06005ff6 func cpk_ApiSetValue hand validates stream and nonnegative value, calls internal setter
+0x06006094 func cpk_ApiGetDurationUnits hand vtable query plus extra term from header field shifted 4, combined into one total
+0x06006104 func cpk_ApiNullCheckSet hand null check then calls internal setter with two args
+0x0600613c func cpk_ApiNullCheckCall2 hand null check, error otherwise tail-call internal function
+0x060061bc func cpk_InitClampTables hand fills 16-bit tables (0, i, 31) and 32-bit tables used to clamp YUV-to-RGB555 conversion
+0x0600621a func cpk_DecodeCodebook hand converts Cinepak codebook entries (YUV chunk 0x20/0x22 or masked) to packed RGB words via clamp table
+0x0600681c func cpk_MarkSimilarColors hand loops words, if manhattan RGB distance to given color <= threshold masks the word (transparency key)
+0x0600698a func cpk_DecodeVectorsInter hand Cinepak V1/V4 vector block decode into 4 rows with bitflag per 4x4 block, 1-bit select
+0x06006b5e func cpk_DecodeVectorsIntra hand Cinepak intra vector decode: flag bits choose skip, V1 or V4 per 4x4 block
+0x06006d60 func cpk_DecodeFrameChunks hand walks Cinepak frame chunks: codebooks 0x20-0x23, vectors 0x30-0x32, strips; calls decoders per strip
+0x06007048 func delay_Loop hand busy-wait decrement loop of param count
+0x06007052 func snd_NotifyChannels hand loops 32 streams in state 4 matching mask, bumps counter and calls notify function
+0x060070c8 func snd_CopyShadowByte hand copies one byte from a table into shadow register array
+0x060070de func snd_SyncShadowRegs hand compares eight shadow bytes with source, updates changed ones, notifies channels if any changed
+0x06007164 func snd_WriteCommandBytes hand copies bytes into sound command slot (from offset 2) verifying write, retries via error call
+0x060071ae func snd_QueueCommandA hand interrupts masked; waits sound command slot free, builds 8-byte command (channel, volume/pan, time) and writes it
+0x06007314 func snd_QueueStartCommand hand waits for free slot then builds 12-byte start command (mono/stereo, 8/16 bit, address, size, pan) and writes it
+0x06007490 func snd_QueueStopCommand hand waits for free slot then builds 3-byte command with channel and writes it
+0x06007548 func cpk_CopyAudioBackward hand copies words backward then mirrors first sample into last slot of audio ring (8 or 16 bit)
+0x060075a4 func cpk_CopyAudioChunked hand copies data in aligned chunks bounded by ring size via two copy helpers (word or byte)
+0x06007638 func cpk_GetAudioWriteRegion hand computes free audio ring space and contiguous write chunks for left and right
+0x060076d0 func cpk_AdvanceAudioWrite hand advances audio write position by byte count and wraps ring
+0x06007730 func mem_FillShortsBackward hand fills param_3 16-bit entries with value, writing backward from end
+0x0600775c func mem_CopyLongsBackward hand copies param_3 32-bit words backward from end to start
+0x06007776 func mem_MoveBytes hand memmove for bytes, chooses forward or backward copy by pointer order
+0x060077aa func mem_MoveLongs hand memmove for 32-bit words
+0x060077e2 func mem_RotateBytes hand rotates byte buffer by count using three copies (swap halves)
+0x06007820 func mem_RotateLongs hand rotates 32-bit word buffer using three copies
+0x0600786c func frt_TimerStart hand sets two clock-select bits in free-running timer control register, zeroes overflow and last count
+0x0600788c func frt_ReadTime hand reads FRC high and low bytes, adds overflow count when counter wrapped, returns combined time
+0x060078d4 func cpk_LatchStartTime hand interrupts masked; stores current FRT time into stream state
+0x06007918 func cpk_GetElapsedTicks hand returns FRT time minus latched start time
+0x06007962 func cpk_GetAudioPlayTime hand by stream state gets elapsed time, calls helpers (math) and returns result aligned to 4
+0x06007a12 func cpk_GetPlayPosition hand computes playback frame position and time units by state, using multiply/divide helpers
+0x06007fda func cpk_GetPlayPositionSimple hand like GetPlayPosition: position from latched time and rate by state, -1 when not playing
